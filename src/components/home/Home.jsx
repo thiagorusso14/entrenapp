@@ -12,7 +12,7 @@ function Home() {
     <>
       <Hero />
 
-      {user?.rol === "usuario" ? (
+      {user?.role === "USER_ROLE" ? (
         <>
           {/* Acá se mostrarán todos los entrenadores */}
           <ListaEntrenadores />

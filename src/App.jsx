@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Públicas (desde la nueva carpeta 'home')
 import Home from "./components/home/Home";
-import Nosotros from "./components/home/Nosotros"; // ✅ NUEVO
+import Nosotros from "./components/home/Nosotros";
 import LayoutPublico from "./components/home/LayoutPublico";
 
 // Auth

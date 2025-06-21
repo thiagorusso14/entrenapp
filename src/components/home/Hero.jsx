@@ -7,13 +7,12 @@ function Hero() {
   }, []);
 
   const [filters, setFilters] = useState({
-    zona: "",
-    fecha: "",
-    modalidad: "",
-    precio: "",
-    duracion: "",
-    calificacion: "",
-    categoria: "",
+    zone: "",
+    mode: "",
+    price: "",
+    duration: "",
+    calification: "",
+    category: "",
   });
 
   const handleChange = (e) => {
@@ -30,56 +29,53 @@ function Hero() {
       className="w-full h-screen bg-cover bg-center flex items-center px-10 text-white"
       style={{ backgroundImage: "url('/gym.jpg')" }}
     >
-      {/* TEXTOS A LA IZQUIERDA */}
       <div className="flex-1 flex flex-col justify-start gap-100 pl-12">
         <h1 className="text-6xl font-extrabold leading-tight">Empezá a ponerte</h1>
         <h1 className="text-6xl font-extrabold leading-tight">en forma</h1>
         <p className="text-yellow-400 text-4xl font-bold mt-1">¡Unítenos!</p>
       </div>
 
-      {/* BARRA DE BÚSQUEDA AJUSTADA */}
       <div className="flex-1 flex flex-col items-center gap-4">
         <div className="flex bg-white/90 backdrop-blur-lg shadow-lg rounded-full w-[1120px] px-4 py-3">
-          {/* FILTROS DINÁMICOS */}
           {[
-            { name: "zona", label: "Zona", options: ["Palermo", "Belgrano", "Lanús"] },
-            { name: "modalidad", label: "Modalidad", options: ["Presencial", "Virtual"] },
-            { name: "precio", label: "Precio", options: ["5000 a 7000", "7000 a 9000"] },
-            { name: "duracion", label: "Duración", options: ["1 mes", "3 meses"] },
-            { name: "calificacion", label: "Calificación", options: ["5 estrellas", "4 estrellas"] },
-            { name: "categoria", label: "Categoría", options: ["Running", "Yoga", "Fuerza", "Nutrición"] },
+            {
+              name: "zone", label: "Zona", options: ["PALERMO", "BELGRANO", "CABALLITO", "ALMAGRO", "PARQUE_PATRICIOS", "BOEDO", "AVELLANEDA", "ONLINE"]
+            },
+            { name: "mode", label: "Modalidad", options: ["PRESENCIAL", "ONLINE"] },
+            { name: "price", label: "Precio", type: "number" },
+            { name: "duration", label: "Duración", options: [30, 45, 60, 90, 120] },
+            { name: "calification", label: "Calificación", options: [5, 4, 3, 2, 1] },
+            { name: "category", label: "Categoría", options: ["GYM", "BOXEO", "ESTIRAMIENTO", "YOGA", "PILATES", "FUNCIONAL"] },
           ].map((filtro, index) => (
             <div
               key={filtro.name}
               className={`flex flex-col px-4 ${index !== 5 ? "border-r border-gray-400/60" : ""}`}
             >
-              <span className="text-xs font-semibold text-gray-700 mb-1">{filtro.label}</span>
-              <select
-                name={filtro.name}
-                value={filters[filtro.name]}
-                onChange={handleChange}
-                className="bg-white text-sm text-gray-800 outline-none rounded"
-              >
-                <option value="">Seleccionar</option>
-                {filtro.options.map((opt) => (
-                  <option key={opt}>{opt}</option>
-                ))}
-              </select>
+              {filtro.type === "number" ? (
+                <input
+                  type="number"
+                  name={filtro.name}
+                  value={filters[filtro.name]}
+                  onChange={handleChange}
+                  className="bg-white text-sm text-gray-800 outline-none rounded px-2 py-1 w-32"
+                  min={0}
+                  placeholder="Máx. precio"
+                />
+              ) : (
+                <select
+                  name={filtro.name}
+                  value={filters[filtro.name]}
+                  onChange={handleChange}
+                  className="bg-white text-sm text-gray-800 outline-none rounded"
+                >
+                  <option value="">{filtro.label}</option>
+                  {filtro.options.map((opt) => (
+                    <option key={opt}>{opt}</option>
+                  ))}
+                </select>
+              )}
             </div>
           ))}
-
-          {/* Fecha */}
-          <div className="flex flex-col px-4 border-r border-gray-400/60">
-            <span className="text-xs font-semibold text-gray-700 mb-1">Fecha</span>
-            <input
-              type="date"
-              name="fecha"
-              value={filters.fecha}
-              onChange={handleChange}
-              className="bg-white text-sm text-gray-800 outline-none rounded"
-            />
-          </div>
-
           {/* Botón buscar */}
           <button
             onClick={handleSearch}

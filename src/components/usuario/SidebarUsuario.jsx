@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   FaUserCircle,
   FaUser,
@@ -7,9 +7,19 @@ import {
   FaPaperclip,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/auth/authContext";
 
 const SidebarUsuario = () => {
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate()
+  const handleLogout = async () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    logout()
+    navigate('/')
+  }
+
   return (
     <aside className="bg-[#1b1464] text-white w-28 md:w-64 h-screen p-4 flex flex-col justify-between">
       <div>
@@ -57,7 +67,9 @@ const SidebarUsuario = () => {
       </div>
 
       {/* Logout */}
-      <button className="flex items-center gap-2 text-sm text-white hover:text-gray-300">
+      <button 
+      onClick={handleLogout}
+      className="flex items-center gap-2 text-sm text-white hover:text-gray-300">
         <FaSignOutAlt /> Logout
       </button>
     </aside>
