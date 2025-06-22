@@ -23,6 +23,7 @@ import MisDatos from "./components/usuario/MisDatos";
 import ComentarYPuntuar from "./components/usuario/ComentarYPuntuar";
 import MisClases from "./components/usuario/MisClases";
 import MisArchivos from "./components/usuario/MisArchivos";
+import CreateNewPassword from "./components/auth/CreateNewPassword";
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/login" element={<Login />} />
         <Route path="/recuperar" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<CreateNewPassword />} />
 
         {/* Panel del entrenador */}
         <Route path="/entrenador" element={<LayoutEntrenador />}>
