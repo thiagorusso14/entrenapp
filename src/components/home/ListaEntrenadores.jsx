@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Link } from "react-router-dom";
+import { SearchContext } from "../../context/search/searchContext";
 
 const entrenadoresMock = [
   {
@@ -29,39 +30,50 @@ const entrenadoresMock = [
 ];
 
 const ListaEntrenadores = () => {
+  const { services } = useContext(SearchContext);
+
   return (
     <section className="bg-white py-12 px-4 md:px-12">
       <h2 className="text-3xl font-bold text-center mb-10 text-gray-800">Entrenadores disponibles</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-        {entrenadoresMock.map((entrenador) => (
-          <div
-            key={entrenador.id}
-            className="bg-indigo-800 rounded-2xl p-6 shadow-lg text-white flex flex-col items-center"
-          >
-            <img
-              src={entrenador.imagen}
-              alt={entrenador.nombre}
-              className="w-28 h-28 object-cover rounded-full mb-4 border-4 border-white shadow-md"
-            />
-            <h3 className="text-lg font-bold underline">{entrenador.nombre}</h3>
-            <p className="mt-1">{entrenador.categoria}</p>
-            <p className="text-yellow-300 font-semibold mt-1">${entrenador.precio} / hr</p>
+      {services.length === 0 ? (
+        <p className="text-center text-gray-500">No hay servicios para mostrar.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          {services.map((servicio) => (
+            <div
+              key={servicio._id}
+              className="bg-indigo-800 rounded-2xl p-6 shadow-lg text-white flex flex-col items-center"
+            >
+              <img
+                src={servicio.trainer?.photo || "/default-profile.jpg"}
+                alt={servicio.trainer?.name || "Entrenador"}
+                className="w-28 h-28 object-cover rounded-full mb-4 border-4 border-white shadow-md"
+              />
+              <h3 className="text-lg font-bold underline">
+                {servicio.trainer?.name || "Entrenador"}
+              </h3>
+              <p className="mt-1">{servicio.category}</p>
+              <p className="text-yellow-300 font-semibold mt-1">
+                ${servicio.price} / hr
+              </p>
 
-            <div className="text-sm text-left mt-4 w-full">
-              <p className="font-semibold">Comentarios:</p>
-              {entrenador.comentarios.map((c, i) => (
-                <p key={i} className="text-gray-200 pl-2">• {c}</p>
-              ))}
+              <div className="text-sm text-left mt-4 w-full">
+                <p className="font-semibold">Zona: {servicio.zone}</p>
+                <p className="font-semibold">Modalidad: {servicio.mode}</p>
+                <p className="font-semibold">Duración: {servicio.duration} min</p>
+                <p className="font-semibold">Fecha: {new Date(servicio.date).toLocaleDateString()}</p>
+                <p className="font-semibold">Hora: {servicio.time}</p>
+              </div>
+
+              <Link to={`/usuario/contratar/${servicio._id}`} className="mt-auto">
+                <button className="mt-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full transition duration-300 font-semibold">
+                  Contratar servicio
+                </button>
+              </Link>
             </div>
-
-            <Link to={`/usuario/contratar/${entrenador.id}`} className="mt-auto">
-              <button className="mt-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full transition duration-300 font-semibold">
-                Contratar servicio
-              </button>
-            </Link>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

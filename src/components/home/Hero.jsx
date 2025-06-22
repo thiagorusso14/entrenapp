@@ -1,10 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { FaSearch } from "react-icons/fa";
+import { SearchContext } from "../../context/search/searchContext";
 
 function Hero() {
+  const { searchServices, services } = useContext(SearchContext);
+
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    console.log(services);
+  }, [services]);
 
   const [filters, setFilters] = useState({
     zone: "",
@@ -20,9 +23,9 @@ function Hero() {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSearch = () => {
-    console.log("Filtros aplicados:", filters);
-  };
+  const handleSearch = async () => {
+  await searchServices(filters);
+};
 
   return (
     <div
