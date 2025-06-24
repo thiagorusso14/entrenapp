@@ -3,22 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/auth/authContext';
 import api from '../../axios/axios';
 
-const Login = () => {
-
+const Login = ({ tipo }) => {
   const { login } = useContext(AuthContext);
   const [mail, setMail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     console.log("Login intentando con:", mail, password);
+
     try {
       const { data } = await api.post("/users/login", {
         mail,
         password,
       });
+
+      // Verificar rol si es login de entrenador
+      if (tipo === "entrenador" && data.user.role !== "TRAINER_ROLE") {
+        setError("Este usuario no es un entrenador.");
+        return;
+      }
 
       login(data.user, data.token);
 
@@ -26,11 +32,11 @@ const Login = () => {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       if (data.user.role === 'USER_ROLE') {
-        navigate('/usuario')
-      } else if (data.user.role === 'TRAINER_ROLE'){
-        navigate('/entrenador')
+        navigate('/usuario');
+      } else if (data.user.role === 'TRAINER_ROLE') {
+        navigate('/entrenador');
       }
-      
+
     } catch (err) {
       console.error("Error en login:", err);
       setError(err.response?.data?.message || "Error al iniciar sesión");
@@ -42,7 +48,9 @@ const Login = () => {
       <div className="flex w-full max-w-5xl rounded-lg bg-white p-10 shadow-lg">
         {/* Formulario */}
         <div className="w-full md:w-1/2 pr-6 md:pr-12">
-          <h2 className="text-3xl font-bold text-[#12015f] mb-8">Ingresar</h2>
+          <h2 className="text-3xl font-bold text-[#12015f] mb-8">
+            {tipo === "entrenador" ? "Login de Entrenador" : "Ingresar"}
+          </h2>
           <form className="space-y-5" onSubmit={handleLogin}>
             <div>
               <label className="block font-semibold text-sm text-[#12015f]">Correo</label>
@@ -71,7 +79,7 @@ const Login = () => {
               className="w-full rounded-full bg-[#12015f] px-6 py-3 text-white font-semibold hover:opacity-90 transition">
               Ingresar
             </button>
-            {error && <p>{error}</p>}
+            {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
           </form>
         </div>
 

@@ -1,36 +1,21 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "../../axios/axios";
 
 function GestionServicios() {
-  const servicios = [
-    {
-      nombre: "Servicio 1",
-      cliente: "Pepe",
-      estado: "Pendiente",
-      horario: "10:00am - 11:00am",
-      fecha: "2025-03-16",
-    },
-    {
-      nombre: "Servicio 2",
-      cliente: "Marta",
-      estado: "Aceptado",
-      horario: "15:00pm - 16:00pm",
-      fecha: "2025-05-24",
-    },
-    {
-      nombre: "Servicio 3",
-      cliente: "Juan",
-      estado: "Cancelado",
-      horario: "18:00pm - 19:00pm",
-      fecha: "2025-04-23",
-    },
-    {
-      nombre: "Servicio 4",
-      cliente: "Sofía",
-      estado: "Completado",
-      horario: "15:00pm - 16:00pm",
-      fecha: "2025-03-11",
-    },
-  ];
+  const [servicios, setServicios] = useState([]);
+
+  useEffect(() => {
+    const fetchServicios = async () => {
+      try {
+        const { data } = await api.get("/services/active");
+        setServicios(data);
+      } catch (error) {
+        console.error("Error al obtener los servicios activos", error);
+      }
+    };
+
+    fetchServicios();
+  }, []);
 
   const getColorStyle = (estado) => {
     switch (estado) {
@@ -54,20 +39,20 @@ function GestionServicios() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {servicios.map((s, i) => (
           <div
-            key={i}
-            className={`rounded-xl shadow-md p-4 ${getColorStyle(s.estado)}`}
+            key={s._id || i}
+            className={`rounded-xl shadow-md p-4 ${getColorStyle(s.status || "Pendiente")}`}
           >
-            <h3 className="text-indigo-900 font-semibold mb-2">{s.nombre}</h3>
-            <p className="text-sm text-gray-700">Cliente: {s.cliente}</p>
-            <p className="text-sm text-gray-700">Estado: {s.estado}</p>
-            <p className="text-sm text-gray-700">Horario: {s.horario}</p>
+            <h3 className="text-indigo-900 font-semibold mb-2">{s.name}</h3>
+            <p className="text-sm text-gray-700">Cliente: {s.trainer?.name || "No especificado"}</p>
+            <p className="text-sm text-gray-700">Estado: {s.status || "Pendiente"}</p>
+            <p className="text-sm text-gray-700">Horario: {s.time || "Sin definir"}</p>
 
             <div className="mt-2">
               <label className="text-sm text-gray-700 block mb-1">Fecha:</label>
               <input
                 type="date"
                 className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                value={s.fecha}
+                value={s.date ? s.date.slice(0, 10) : ""}
                 readOnly
               />
             </div>
@@ -81,7 +66,7 @@ function GestionServicios() {
             </div>
 
             <div className="mt-4 flex gap-2 flex-wrap">
-              {s.estado === "Pendiente" && (
+              {s.status === "Pendiente" && (
                 <>
                   <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">
                     Aceptar
@@ -91,7 +76,7 @@ function GestionServicios() {
                   </button>
                 </>
               )}
-              {s.estado === "Aceptado" && (
+              {s.status === "Aceptado" && (
                 <button className="bg-red-600 text-white px-3 py-1 rounded-md text-sm">
                   Cancelar
                 </button>

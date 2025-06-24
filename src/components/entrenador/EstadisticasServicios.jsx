@@ -1,80 +1,77 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import api from "../../axios/axios";
 
 function EstadisticasServicios() {
-  const estadisticas = [
-    {
-      servicio: "Servicio 1",
-      total: 306,
-      valoraciones: {
-        Excelente: 120,
-        Bueno: 100,
-        Normal: 50,
-        Malo: 20,
-        Pésimo: 16,
-      },
-      comentarios: ["El mejor entrenador de todos", "Gracias por el servicio"],
-    },
-    {
-      servicio: "Servicio 2",
-      total: 245,
-      valoraciones: {
-        Excelente: 101,
-        Bueno: 89,
-        Normal: 30,
-        Malo: 15,
-        Pésimo: 10,
-      },
-      comentarios: ["Muy profesional", "Gran experiencia"],
-    },
-    {
-      servicio: "Servicio 3",
-      total: 210,
-      valoraciones: {
-        Excelente: 84,
-        Bueno: 70,
-        Normal: 25,
-        Malo: 17,
-        Pésimo: 14,
-      },
-      comentarios: [],
-    },
-  ];
+  const [stats, setStats] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchStatsAndReviews = async () => {
+      try {
+        const trainer = JSON.parse(localStorage.getItem("user"));
+
+        const [statsRes, reviewsRes] = await Promise.all([
+          api.get(`/reviews/trainer-stats/${trainer._id}`),
+          api.get(`/reviews/${trainer._id}`),
+        ]);
+
+        setStats(statsRes.data);
+        if (reviewsRes.data.reviews) {
+          setReviews(reviewsRes.data.reviews);
+        }
+      } catch (err) {
+        console.error("Error al cargar datos:", err);
+        setError("No se pudieron obtener las estadísticas o reseñas.");
+      }
+    };
+
+    fetchStatsAndReviews();
+  }, []);
+
+  if (error) {
+    return <p className="text-red-500 font-semibold">{error}</p>;
+  }
+
+  if (!stats) {
+    return <p className="text-gray-500">Cargando estadísticas...</p>;
+  }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-indigo-900 mb-8">
+    <div className="p-6">
+      <h2 className="text-2xl font-bold text-indigo-900 mb-6">
         Estadísticas de tus servicios
       </h2>
 
-      <div className="space-y-8">
-        {estadisticas.map((e, idx) => (
-          <div key={idx} className="bg-indigo-100 p-6 rounded-xl shadow-md">
-            <h3 className="text-lg font-semibold mb-1">{e.servicio}</h3>
-            <p className="text-sm text-gray-700 mb-2">
-              Contrataciones en total: {e.total}
-            </p>
-            <ul className="text-sm text-gray-600 mb-4">
-              {Object.entries(e.valoraciones).map(([nivel, cantidad]) => (
-                <li key={nivel}>
-                  {nivel} ({cantidad})
-                </li>
-              ))}
-            </ul>
+      <div className="bg-indigo-100 p-6 rounded-xl shadow-md space-y-4 mb-10">
+        <p className="text-sm text-gray-700">
+          <strong>Servicios publicados:</strong> {stats.publishedServicesCount}
+        </p>
+        <p className="text-sm text-gray-700">
+          <strong>Clases confirmadas:</strong> {stats.confirmedBookingsCount}
+        </p>
+        <p className="text-sm text-gray-700">
+          <strong>Promedio de valoración:</strong> {stats.averageRating}/5
+        </p>
+        <p className="text-sm text-gray-700">
+          <strong>Total de vistas:</strong> {stats.totalViews}
+        </p>
+      </div>
 
-            {e.comentarios.map((comentario, i) => (
-              <div key={i} className="mb-4">
-                <p className="text-sm font-semibold text-gray-800 mb-1">
-                  "{comentario}"
-                </p>
-                <input
-                  type="text"
-                  placeholder="Responder:"
-                  className="w-full rounded-md border border-gray-300 px-4 py-2"
-                />
-              </div>
-            ))}
-          </div>
-        ))}
+      <div className="space-y-6">
+        <h3 className="text-xl font-semibold text-indigo-900">Reseñas de alumnos</h3>
+        {reviews.length > 0 ? (
+          reviews.map((r, i) => (
+            <div key={i} className="bg-white border border-gray-300 rounded-lg p-4 shadow">
+              <p className="text-gray-800 font-medium mb-2">
+                Valoración: <span className="text-yellow-500">{r.rating} ★</span>
+              </p>
+              <p className="text-gray-600">{r.comment}</p>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500">Aún no recibiste reseñas.</p>
+        )}
       </div>
     </div>
   );

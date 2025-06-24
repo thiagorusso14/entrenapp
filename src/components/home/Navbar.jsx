@@ -31,14 +31,14 @@ function Navbar() {
             </li>
             <li>
               <Link
-                to="/entrenador/mis-datos"
+                to="/login-entrenador"
                 className="bg-[#FFE54C] text-[#0A014F] rounded-full px-5 py-2 font-bold hover:bg-[#f5d940] transition"
               >
                 Soy Entrenador
               </Link>
             </li>
           </>
-        ) : user.rol === "usuario" ? (
+        ) : user.role === "USER_ROLE" ? (
           <>
             <li>
               <Link to="/usuario" className="hover:underline">Mi cuenta</Link>
@@ -52,7 +52,7 @@ function Navbar() {
               </button>
             </li>
           </>
-        ) : user.rol === "entrenador" ? (
+        ) : user.role === "TRAINER_ROLE" ? (
           <>
             <li>
               <Link to="/entrenador" className="hover:underline">Panel</Link>

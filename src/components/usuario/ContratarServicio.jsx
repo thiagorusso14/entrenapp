@@ -4,28 +4,40 @@ import { useEffect, useState } from "react";
 import WalletBrick from "../MercadoPago/WalletBrick";
 
 const ContratarServicio = ({ onClose, servicio }) => {
-  const { id } = useParams();
-
-
+  const { id } = useParams(); // en este componente no es necesario
   const [preferenceId, setPreferenceId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-    
-    const createPreference = async () => {
+    const contratarServicio = async () => {
       try {
+        // 1. Crear la reserva (booking)
+        await api.post(`/bookings/${user._id}`, {
+          serviceId: servicio._id,
+        });
+
+        // 2. Generar preferencia de pago
         const { data } = await api.post('/services/create-preference', {
           title: `${servicio.name} - ${servicio.trainer.name}`,
           unit_price: servicio.price,
         });
 
         setPreferenceId(data.preferenceId);
-      } catch (error) {
-        console.error("Error creando preferencia:", error);
+      } catch (err) {
+        console.error("Error al contratar servicio:", err);
+        setError("No se pudo contratar el servicio.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    createPreference();
+    contratarServicio();
   }, []);
+
+  if (loading) return <div className="text-center text-white">Cargando...</div>;
+  if (error) return <div className="text-center text-red-600">{error}</div>;
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -46,8 +58,9 @@ const ContratarServicio = ({ onClose, servicio }) => {
         <p><strong>Modalidad:</strong> {servicio.mode}</p>
         <p><strong>Fecha:</strong> {new Date(servicio.date).toLocaleDateString()}</p>
         <p><strong>Hora:</strong> {servicio.time}</p>
-        
-        <WalletBrick servicio={servicio} />
+
+        {/* Si hay preferenceId, mostrar botón de pago */}
+        {preferenceId && <WalletBrick servicio={servicio} />}
       </div>
     </div>
   );

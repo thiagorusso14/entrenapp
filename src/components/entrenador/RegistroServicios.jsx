@@ -1,35 +1,28 @@
 import React, { useState } from "react";
 import { FaTrash, FaEdit, FaPlus } from "react-icons/fa";
+import api from "../../axios/axios";
 
 function RegistroServicios() {
-  const [servicios, setServicios] = useState([
-    {
-      nombre: "Servicio1",
-      categoria: "Localizada",
-      duracion: "60min",
-      precio: "$10.000",
-      disponibilidad: "mañana",
-      publicado: false,
-    },
-    {
-      nombre: "Servicio2",
-      categoria: "Crossfit",
-      duracion: "45min",
-      precio: "$12.000",
-      disponibilidad: "noche",
-      publicado: true,
-    },
-  ]);
-
+  const [servicios, setServicios] = useState([]);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [nuevoServicio, setNuevoServicio] = useState({
     nombre: "",
-    categoria: "",
-    duracion: "",
+    zona: "",
+    modalidad: "",
     precio: "",
-    disponibilidad: "",
+    duracion: "",
+    categoria: "",
     publicado: false,
   });
+
+  const zonas = [
+    "PALERMO", "BELGRANO", "CABALLITO", "ALMAGRO",
+    "PARQUE_PATRICIOS", "BOEDO", "AVELLANEDA", "ONLINE"
+  ];
+
+  const modalidades = ["PRESENCIAL", "ONLINE"];
+  const duraciones = [30, 45, 60, 90, 120];
+  const categorias = ["GYM", "BOXEO", "ESTIRAMIENTO", "YOGA", "PILATES", "FUNCIONAL"];
 
   const handleToggleFormulario = () => {
     setMostrarFormulario(!mostrarFormulario);
@@ -40,17 +33,41 @@ function RegistroServicios() {
     setNuevoServicio((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleAgregarServicio = () => {
-    setServicios((prev) => [...prev, nuevoServicio]);
-    setNuevoServicio({
-      nombre: "",
-      categoria: "",
-      duracion: "",
-      precio: "",
-      disponibilidad: "",
-      publicado: false,
-    });
-    setMostrarFormulario(false);
+  const handleAgregarServicio = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      const body = {
+        name: nuevoServicio.nombre,
+        zone: nuevoServicio.zona,
+        mode: nuevoServicio.modalidad,
+        price: parseInt(nuevoServicio.precio),
+        duration: parseInt(nuevoServicio.duracion),
+        category: nuevoServicio.categoria,
+        published: true,
+        trainer: user._id,
+      };
+
+      const { data } = await api.post("/services", body);
+
+      setServicios((prev) => [...prev, data]);
+
+      setNuevoServicio({
+        nombre: "",
+        zona: "",
+        modalidad: "",
+        precio: "",
+        duracion: "",
+        categoria: "",
+        publicado: false,
+      });
+
+      setMostrarFormulario(false);
+      alert("Servicio publicado correctamente");
+    } catch (err) {
+      console.error("Error al publicar servicio:", err);
+      alert("Error al crear el servicio");
+    }
   };
 
   const togglePublicado = (index) => {
@@ -72,44 +89,73 @@ function RegistroServicios() {
           </button>
         </div>
 
-        {/* FORMULARIO CONDICIONAL */}
         {mostrarFormulario && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-white p-4 rounded-lg text-black">
             <input
               name="nombre"
               value={nuevoServicio.nombre}
               onChange={handleChange}
-              placeholder="Nombre"
+              placeholder="Nombre del servicio"
               className="p-2 rounded border"
             />
-            <input
-              name="categoria"
-              value={nuevoServicio.categoria}
+
+            <select
+              name="zona"
+              value={nuevoServicio.zona}
               onChange={handleChange}
-              placeholder="Categoría"
               className="p-2 rounded border"
-            />
-            <input
-              name="duracion"
-              value={nuevoServicio.duracion}
+            >
+              <option value="">Zona</option>
+              {zonas.map((z) => (
+                <option key={z} value={z}>{z}</option>
+              ))}
+            </select>
+
+            <select
+              name="modalidad"
+              value={nuevoServicio.modalidad}
               onChange={handleChange}
-              placeholder="Duración"
               className="p-2 rounded border"
-            />
+            >
+              <option value="">Modalidad</option>
+              {modalidades.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+
             <input
               name="precio"
               value={nuevoServicio.precio}
               onChange={handleChange}
-              placeholder="Precio"
+              placeholder="Precio máximo ($)"
+              type="number"
               className="p-2 rounded border"
             />
-            <input
-              name="disponibilidad"
-              value={nuevoServicio.disponibilidad}
+
+            <select
+              name="duracion"
+              value={nuevoServicio.duracion}
               onChange={handleChange}
-              placeholder="Disponibilidad horaria"
               className="p-2 rounded border"
-            />
+            >
+              <option value="">Duración (minutos)</option>
+              {duraciones.map((d) => (
+                <option key={d} value={d}>{d} minutos</option>
+              ))}
+            </select>
+
+            <select
+              name="categoria"
+              value={nuevoServicio.categoria}
+              onChange={handleChange}
+              className="p-2 rounded border"
+            >
+              <option value="">Categoría</option>
+              {categorias.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
             <button
               onClick={handleAgregarServicio}
               className="bg-[#6c6fa9] text-white py-2 rounded hover:bg-[#5a5e9a] col-span-1 md:col-span-3"
@@ -119,7 +165,6 @@ function RegistroServicios() {
           </div>
         )}
 
-        {/* TABLA */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-white">
             <thead>
@@ -128,7 +173,8 @@ function RegistroServicios() {
                 <th className="px-4 py-2">Categoría</th>
                 <th className="px-4 py-2">Duración</th>
                 <th className="px-4 py-2">Precio</th>
-                <th className="px-4 py-2">Disponibilidad</th>
+                <th className="px-4 py-2">Zona</th>
+                <th className="px-4 py-2">Modalidad</th>
                 <th className="px-4 py-2">Publicado</th>
                 <th className="px-4 py-2 text-center">Acciones</th>
               </tr>
@@ -136,15 +182,16 @@ function RegistroServicios() {
             <tbody>
               {servicios.map((s, i) => (
                 <tr key={i} className="border-t border-white/20">
-                  <td className="px-4 py-2">{s.nombre}</td>
-                  <td className="px-4 py-2">{s.categoria}</td>
-                  <td className="px-4 py-2">{s.duracion}</td>
-                  <td className="px-4 py-2">{s.precio}</td>
-                  <td className="px-4 py-2">{s.disponibilidad}</td>
+                  <td className="px-4 py-2">{s.name}</td>
+                  <td className="px-4 py-2">{s.category}</td>
+                  <td className="px-4 py-2">{s.duration} min</td>
+                  <td className="px-4 py-2">${s.price}</td>
+                  <td className="px-4 py-2">{s.zone}</td>
+                  <td className="px-4 py-2">{s.mode}</td>
                   <td className="px-4 py-2">
                     <input
                       type="checkbox"
-                      checked={s.publicado}
+                      checked={s.published}
                       onChange={() => togglePublicado(i)}
                       className="accent-white w-4 h-4 cursor-pointer"
                     />
