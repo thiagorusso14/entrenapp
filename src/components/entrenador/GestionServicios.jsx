@@ -32,6 +32,28 @@ function GestionServicios() {
     }
   };
 
+  const handleUploadFile = async (serviceId) => {
+    const fileUrl = prompt("Pegá la URL pública del archivo (ej: Google Drive)");
+
+    if (!fileUrl) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      await api.patch(`/services/upload-file/${serviceId}`, {
+        fileUrl
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      alert("Archivo agregado correctamente");
+    } catch (error) {
+      console.error("Error al subir archivo:", error);
+      alert("Error al agregar el archivo al servicio");
+    }
+  };
+
   return (
     <div>
       <h2 className="text-xl font-bold text-indigo-900 mb-6">Gestión de servicios</h2>
@@ -61,6 +83,7 @@ function GestionServicios() {
               <label className="block text-sm text-gray-700 mb-1">Adjuntar archivo:</label>
               <input
                 type="file"
+                onChange={() => handleUploadFile(s._id)}
                 className="block w-full text-sm text-gray-700 bg-white border border-gray-300 rounded-md file:px-4 file:py-1 file:border-0 file:bg-indigo-600 file:text-white file:rounded-md"
               />
             </div>
