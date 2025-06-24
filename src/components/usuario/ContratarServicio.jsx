@@ -6,14 +6,14 @@ import WalletBrick from "../MercadoPago/WalletBrick";
 const ContratarServicio = ({ onClose, servicio }) => {
   const { id } = useParams();
 
+
   const [preferenceId, setPreferenceId] = useState(null);
 
   useEffect(() => {
-    initMercadoPago(import.meta.env.VITE_MP_PUBLIC_KEY); // tu PUBLIC_KEY de MercadoPago
-
+    
     const createPreference = async () => {
       try {
-        const { data } = await api.post('/create-preference', {
+        const { data } = await api.post('/services/create-preference', {
           title: `${servicio.name} - ${servicio.trainer.name}`,
           unit_price: servicio.price,
         });
@@ -46,7 +46,7 @@ const ContratarServicio = ({ onClose, servicio }) => {
         <p><strong>Modalidad:</strong> {servicio.mode}</p>
         <p><strong>Fecha:</strong> {new Date(servicio.date).toLocaleDateString()}</p>
         <p><strong>Hora:</strong> {servicio.time}</p>
-
+        
         <WalletBrick servicio={servicio} />
       </div>
     </div>
