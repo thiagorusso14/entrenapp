@@ -1,5 +1,5 @@
-import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+import { useContext, useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { SearchContext } from "../../context/search/searchContext";
 import ContratarServicio from "../usuario/ContratarServicio";
 
@@ -12,6 +12,12 @@ const ListaEntrenadores = () => {
     setSelectedService(servicio);
     setIsDrawerOpen(true);
   };
+const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
+  useEffect(() => {
+    
+  }, [])
+
 
   return (
     <section className="bg-white py-12 px-4 md:px-12">
@@ -50,13 +56,20 @@ const ListaEntrenadores = () => {
                     <p className="font-semibold">Hora: {servicio.time}</p>
                   </div>
 
-                  {/* <Link to={`/usuario/contratar/${servicio._id}`} className="mt-auto"> */}
-                    <button 
+                  {user ? <button
                     onClick={() => handleOpenDrawer(servicio)}
                     className="mt-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full transition duration-300 font-semibold">
-                      Contratar servicio
-                    </button>
-                  {/* </Link> */}
+                    Contratar servicio
+                  </button> :
+                    <Link to="/login">
+                      <button
+                        className="mt-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full transition duration-300 font-semibold">
+                        Registrarse
+                      </button>
+                    </Link>
+                  }
+
+
                 </div>
               ))}
         </div>
