@@ -84,36 +84,34 @@ const ListaEntrenadores = () => {
                     <p><strong>Modalidad:</strong> {servicio.mode}</p>
                   </div>
 
-                  {/* Comentarios */}
-                  <div className="bg-white text-indigo-900 rounded-lg p-3 mb-3 w-full">
-                    <h4 className="font-semibold text-sm mb-2">Comentarios recientes:</h4>
+                  {/* Sección de comentarios */}
+                  <div className="bg-white text-indigo-900 rounded-lg p-3 mb-4 w-full min-h-[50px]">
                     {resenas.length > 0 ? (
-                      resenas.map((r, i) => (
-                        <div key={i} className="text-sm mb-2 border-b pb-1 last:border-0 last:mb-0">
-                          <p className="text-yellow-400">{"★".repeat(r.rating)}</p>
-                          <p className="italic">{r.comment}</p>
-                        </div>
-                      ))
+                      <>
+                        <h4 className="font-semibold text-sm mb-2">Comentarios recientes:</h4>
+                        {resenas.map((r, i) => (
+                          <div key={i} className="text-sm mb-2 border-b pb-2 last:border-0 last:mb-0">
+                            <p className="text-yellow-400">{"★".repeat(r.rating)}</p>
+                            <p className="italic text-indigo-800">{r.comment}</p>
+                            {r.trainerReply?.text && (
+                              <div className="bg-indigo-100 rounded mt-1 px-2 py-1 text-xs text-indigo-900">
+                                <strong>Respuesta del entrenador:</strong> <em>{r.trainerReply.text}</em>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </>
                     ) : (
-                      <p className="text-gray-500 italic">Aún no tiene reseñas.</p>
+                      <p className="text-xs italic text-gray-500">Este entrenador aún no tiene reseñas.</p>
                     )}
                   </div>
 
-                  {/* Botón de acción */}
-                  {user ? (
-                    <button
-                      onClick={() => handleOpenDrawer(servicio)}
-                      className="bg-white text-indigo-800 py-2 px-4 rounded-full hover:bg-gray-100 transition w-full text-center font-semibold"
-                    >
-                      Contratar servicio
-                    </button>
-                  ) : (
-                    <Link to="/login" className="w-full">
-                      <button className="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full w-full font-semibold transition">
-                        Registrarse
-                      </button>
-                    </Link>
-                  )}
+                  <button
+                    onClick={() => handleOpenDrawer(servicio)}
+                    className="bg-white text-indigo-800 py-2 px-4 rounded-full hover:bg-gray-100 transition w-full text-center font-semibold"
+                  >
+                    {user ? "Contratar servicio" : "Iniciar sesión"}
+                  </button>
                 </div>
               );
             })}
