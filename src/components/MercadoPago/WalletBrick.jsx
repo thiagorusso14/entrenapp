@@ -3,7 +3,7 @@ import api from '../../axios/axios';
 
 const WalletBrick = ({ servicio }) => {
   const containerRef = useRef(null);
-  const initializedRef = useRef(false); // 👈 flag para evitar doble render
+  const initializedRef = useRef(false); // evitar doble render
 
   useEffect(() => {
     if (initializedRef.current) return; // evitar doble inicialización

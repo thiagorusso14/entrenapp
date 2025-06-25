@@ -6,18 +6,16 @@ function Navbar() {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/"); // Redirige al home
-    window.location.reload(); // ✅ Fuerza recarga completa
+    navigate("/");
+    window.location.reload();
   };
 
   return (
     <nav className="flex justify-between items-center px-10 py-4 bg-white font-poppins shadow-md">
-      {/* Logo */}
       <h1 className="text-xl font-medium text-[#0A014F]">
         Entren<span className="font-bold">APP</span>
       </h1>
 
-      {/* Enlaces condicionales */}
       <ul className="flex items-center gap-8 text-sm font-bold text-[#0A014F]">
         {!user ? (
           <>

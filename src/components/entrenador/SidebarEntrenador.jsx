@@ -34,7 +34,6 @@ function SidebarEntrenador() {
           </p>
         </div>
 
-        {/* Links */}
         <nav className="space-y-6 text-sm md:text-base">
           <NavLink
             to="/entrenador/mis-datos"
@@ -71,7 +70,6 @@ function SidebarEntrenador() {
         </nav>
       </div>
 
-      {/* Logout */}
       <button
         onClick={handleLogout}
         className="flex items-center gap-2 text-sm text-white hover:text-gray-300"

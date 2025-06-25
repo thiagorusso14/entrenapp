@@ -4,7 +4,6 @@ function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-10 px-6 md:px-20">
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
-        {/* Columna 1 */}
         <div>
           <h3 className="text-lg font-bold mb-4 text-yellow-400">GYM</h3>
           <ul className="space-y-2 text-sm text-gray-300">
@@ -15,7 +14,6 @@ function Footer() {
           </ul>
         </div>
 
-        {/* Columna 2 */}
         <div>
           <h3 className="text-lg font-bold mb-4 text-yellow-400">MEMBERS</h3>
           <ul className="space-y-2 text-sm text-gray-300">
@@ -26,7 +24,6 @@ function Footer() {
           </ul>
         </div>
 
-        {/* Columna 3 */}
         <div>
           <h3 className="text-lg font-bold mb-4 text-yellow-400">COMPANY</h3>
           <ul className="space-y-2 text-sm text-gray-300">

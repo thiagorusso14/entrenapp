@@ -9,7 +9,7 @@ const ContratarServicio = ({ onClose, servicio }) => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
-  const executedRef = useRef(false); // 👈 evita doble ejecución
+  const executedRef = useRef(false); //evita doble ejecución
 
   useEffect(() => {
     const contratar = async () => {

@@ -3,6 +3,7 @@ import api from "../../axios/axios";
 
 function GestionServicios() {
   const [bookings, setBookings] = useState([]);
+  const [fileUrls, setFileUrls] = useState({});
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
 
@@ -21,6 +22,31 @@ function GestionServicios() {
     fetchBookings();
   }, []);
 
+  const handleInputChange = (serviceId, value) => {
+    setFileUrls((prev) => ({ ...prev, [serviceId]: value }));
+  };
+
+  const handleAgregarArchivo = async (serviceId) => {
+    if (!fileUrls[serviceId]) return alert("Ingresá una URL válida.");
+
+    try {
+      await api.put(
+        `/services/${serviceId}/add-file`,
+        { url: fileUrls[serviceId] },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      alert("Archivo agregado con éxito");
+      setFileUrls((prev) => ({ ...prev, [serviceId]: "" })); // Limpiar campo
+    } catch (err) {
+      console.log("Error al agregar archivo:", err);
+      alert("No se pudo agregar el archivo");
+    }
+  };
+
   const handleAccion = async (bookingId, accion) => {
     try {
       await api.post(`/booking/status/${user._id}`, {
@@ -31,7 +57,7 @@ function GestionServicios() {
       });
       fetchBookings();
     } catch (error) {
-      console.error("Error al actualizar estado del booking:", error);
+      console.log("Error al actualizar estado del booking:", error);
       alert("Hubo un problema al actualizar el estado del booking");
     }
   };
@@ -78,6 +104,38 @@ function GestionServicios() {
                 >
                   Cancelar clase
                 </button>
+              )}
+
+              {b.service?.sharedFiles?.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-sm font-semibold text-indigo-800 mb-1">Archivos compartidos:</p>
+                  <ul className="list-disc list-inside text-sm text-blue-700">
+                    {b.service.sharedFiles.map((url, i) => (
+                      <li key={i}>
+                        <a href={url} target="_blank" rel="noopener noreferrer" className="underline">
+                          Archivo {i + 1}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {b.status === "CONFIRMED" && (
+                <div className="mt-4">
+                  <input
+                    type="text"
+                    value={fileUrls[b.service._id] || ""}
+                    onChange={(e) => handleInputChange(b.service._id, e.target.value)}
+                    placeholder="URL del archivo"
+                    className="w-full mb-2 border border-gray-300 px-2 py-1 rounded"
+                  />
+                  <button
+                    onClick={() => handleAgregarArchivo(b.service._id)}
+                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Enviar archivo
+                  </button>
+                </div>
               )}
             </div>
           ))}

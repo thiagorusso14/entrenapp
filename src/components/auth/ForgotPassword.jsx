@@ -20,7 +20,6 @@ const ForgotPassword = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f1eeee] px-4">
       <div className="flex w-full max-w-5xl rounded-lg bg-white p-10 shadow-lg">
-        {/* Formulario */}
         <div className="w-full md:w-1/2 pr-6 md:pr-12">
           <h2 className="text-3xl font-bold text-[#12015f] mb-8">Recuperar Contraseña</h2>
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -54,7 +53,6 @@ const ForgotPassword = () => {
           </form>
         </div>
  
-        {/* Logo */}
         <div className="hidden md:flex w-1/2 items-center justify-center">
           <h1 className="text-5xl font-light text-[#12015f]">
             Entren<span className="font-bold">APP</span>

@@ -5,7 +5,7 @@ function EstadisticasServicios() {
   const [stats, setStats] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState("");
-  const [respuestas, setRespuestas] = useState({}); // manejamos respuestas locales
+  const [respuestas, setRespuestas] = useState({});
 
   const trainer = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");

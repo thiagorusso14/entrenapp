@@ -38,7 +38,7 @@ const MisDatosEntrenador = () => {
           birth: userData.birth?.split("T")[0] || "",
         });
       } catch (error) {
-        console.error("❌ Error al cargar datos del entrenador:", error.response?.data || error.message);
+        console.error("Error al cargar datos del entrenador:", error.response?.data || error.message);
       }
     };
 
@@ -62,12 +62,12 @@ const MisDatosEntrenador = () => {
         },
       });
 
-      localStorage.setItem("user", JSON.stringify(data.user)); // ✅ actualiza sidebar
+      localStorage.setItem("user", JSON.stringify(data.user));
       alert("Datos actualizados correctamente");
       setEditando(false);
-      window.location.reload(); // 🔄 refresca la sidebar
+      window.location.reload();
     } catch (error) {
-      console.error("❌ Error al guardar los cambios:", error.response?.data || error.message);
+      console.error("Error al guardar los cambios:", error.response?.data || error.message);
       alert("No se pudieron guardar los cambios");
     }
   };

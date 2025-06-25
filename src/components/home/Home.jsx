@@ -6,7 +6,7 @@ import ListaEntrenadores from "./ListaEntrenadores";
  
  
 function Home() {
-  const user = JSON.parse(localStorage.getItem("user")); // se puede cambiar por context más adelante
+  const user = JSON.parse(localStorage.getItem("user"));
  
  
   return (
@@ -15,7 +15,6 @@ function Home() {
  
       {user?.role === "USER_ROLE" ? (
         <>
-          {/* Acá se mostrarán todos los entrenadores */}
           <ListaEntrenadores />
           
         </>

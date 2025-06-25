@@ -16,7 +16,7 @@ const MisDatos = () => {
   useEffect(() => {
     const fetchUsuario = async () => {
       if (!user?._id || !token) {
-        console.warn("⚠️ Falta el user ID o token");
+        console.warn("Falta el user ID o token");
         return;
       }
 
@@ -37,7 +37,7 @@ const MisDatos = () => {
           birth: u.birth?.split("T")[0] || "",
         });
       } catch (error) {
-        console.error("❌ Error al cargar datos del usuario:", error.response?.data || error.message || error);
+        console.error("Error al cargar datos del usuario:", error.response?.data || error.message || error);
       }
     };
 
@@ -65,7 +65,7 @@ const MisDatos = () => {
       setEditando(false);
       window.location.reload(); // para refrescar nombre en sidebar
     } catch (error) {
-      console.error("❌ Error al guardar los cambios:", error.response?.data || error.message || error);
+      console.error("Error al guardar los cambios:", error.response?.data || error.message || error);
       alert("No se pudieron guardar los cambios");
     }
   };

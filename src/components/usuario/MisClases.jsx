@@ -86,6 +86,20 @@ const MisClases = () => {
                   <p><strong>Duración:</strong> {clase.service?.duration} min</p>
                   <p><strong>Precio:</strong> ${clase.service?.price.toLocaleString()}</p>
                   <p><strong>Estado:</strong> {clase.status}</p>
+                  {clase.service?.sharedFiles?.length > 0 && clase.status != 'CANCELLED' && (
+                    <div className="mt-3">
+                      <p className="text-sm font-semibold text-indigo-800 mb-1">Material compartido:</p>
+                      <ul className="list-disc list-inside text-sm text-blue-700">
+                        {clase.service.sharedFiles.map((url, i) => (
+                          <li key={i}>
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="underline">
+                              Archivo {i + 1}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {clase.status !== "CANCELLED" && (
