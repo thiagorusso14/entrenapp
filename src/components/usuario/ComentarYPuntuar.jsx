@@ -10,40 +10,40 @@ const ComentarYPuntuar = () => {
   const usuario = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
 
+  const fetchClasesConfirmadas = async () => {
+    try {
+      const { data } = await api.get(
+        `/booking/user/${usuario._id}/confirmed-trainers`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const clases = Array.isArray(data.clases) ? data.clases : [];
+
+      const inicial = {};
+      clases.forEach((clase) => {
+        inicial[clase._id] = {
+          rating: 0,
+          comentario: "",
+          enviado: false,
+          success: false,
+        };
+      });
+
+      setClasesConfirmadas(clases);
+      setResenas(inicial);
+    } catch (error) {
+      console.error("Error al cargar clases confirmadas:", error);
+      setMensaje({
+        text: "No se pudieron cargar tus clases confirmadas.",
+        type: "error",
+      });
+    }
+  };
+
   useEffect(() => {
-    const fetchConfirmadas = async () => {
-      try {
-        const { data } = await api.get(
-          `/booking/user/${usuario._id}/confirmed-trainers`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        const clases = Array.isArray(data.clases) ? data.clases : [];
-
-        const inicial = {};
-        clases.forEach((clase) => {
-          inicial[clase._id] = {
-            rating: 0,
-            comentario: "",
-            enviado: false,
-            success: false,
-          };
-        });
-
-        setClasesConfirmadas(clases);
-        setResenas(inicial);
-      } catch (error) {
-        console.error("Error al cargar clases confirmadas:", error);
-        setMensaje({
-          text: "No se pudieron cargar tus clases confirmadas.",
-          type: "error",
-        });
-      }
-    };
-
-    fetchConfirmadas();
+    fetchClasesConfirmadas();
   }, []);
 
   const handlePuntuar = (id, valor) => {
@@ -97,7 +97,15 @@ const ComentarYPuntuar = () => {
         },
       }));
 
-      setMensaje({ text: "", type: "" });
+      setMensaje({
+        text: "¡Reseña enviada correctamente!",
+        type: "success",
+      });
+
+      // Esperar 2 segundos y actualizar lista
+      setTimeout(() => {
+        fetchClasesConfirmadas();
+      }, 2000);
     } catch (error) {
       console.error("Error al enviar reseña:", error);
       setMensaje({
