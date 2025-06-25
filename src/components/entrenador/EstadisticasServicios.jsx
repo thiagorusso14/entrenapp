@@ -5,13 +5,14 @@ function EstadisticasServicios() {
   const [stats, setStats] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState("");
+  const [respuestas, setRespuestas] = useState({}); // manejamos respuestas locales
+
+  const trainer = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchStatsAndReviews = async () => {
       try {
-        const trainer = JSON.parse(localStorage.getItem("user"));
-        const token = localStorage.getItem("token");
-
         const config = {
           headers: {
             Authorization: `Bearer ${token}`
@@ -20,7 +21,7 @@ function EstadisticasServicios() {
 
         const [statsRes, reviewsRes] = await Promise.all([
           api.get(`/stats/trainer/${trainer._id}`, config),
-          api.get(`/reviews/${trainer._id}`, config),
+          api.get(`/reviews/${trainer._id}`)
         ]);
 
         setStats(statsRes.data);
@@ -36,13 +37,38 @@ function EstadisticasServicios() {
     fetchStatsAndReviews();
   }, []);
 
-  if (error) return <p className="text-red-500 font-semibold">{error}</p>;
-  if (!stats) return <p className="text-gray-500">Cargando estadísticas...</p>;
+  const handleResponder = async (reviewId) => {
+    const respuesta = respuestas[reviewId];
+    if (!respuesta || !respuesta.trim()) return;
+
+    try {
+      await api.patch(`/reviews/reply/${reviewId}`, {
+        reply: respuesta.trim()
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      // actualizar review localmente
+      setReviews(prev =>
+        prev.map(r => r._id === reviewId ? { ...r, reply: respuesta.trim() } : r)
+      );
+
+      setRespuestas(prev => ({ ...prev, [reviewId]: "" }));
+    } catch (err) {
+      console.error("Error al responder reseña:", err);
+      alert("No se pudo enviar la respuesta.");
+    }
+  };
 
   const conversionRate =
-    stats.totalViews > 0
+    stats?.totalViews > 0
       ? ((stats.confirmedBookingsCount / stats.totalViews) * 100).toFixed(2)
       : "0.00";
+
+  if (error) return <p className="text-red-500 font-semibold">{error}</p>;
+  if (!stats) return <p className="text-gray-500">Cargando estadísticas...</p>;
 
   return (
     <div className="p-6 font-poppins">
@@ -83,9 +109,32 @@ function EstadisticasServicios() {
                 <strong>Autor:</strong> {r.author?.name} {r.author?.lastName}
               </p>
 
-              
+              <p className="text-gray-600 italic mb-2">"{r.comment}"</p>
 
-              <p className="text-gray-600 italic">"{r.comment}"</p>
+              {r.reply ? (
+                <div className="bg-indigo-100 border border-indigo-300 p-3 rounded text-sm text-gray-800">
+                  <strong>Respuesta del entrenador:</strong>
+                  <p className="mt-1 italic text-indigo-800">{r.reply}</p>
+                </div>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  <textarea
+                    rows={2}
+                    className="w-full border border-gray-300 rounded p-2 text-sm"
+                    placeholder="Escribe tu respuesta..."
+                    value={respuestas[r._id] || ""}
+                    onChange={(e) =>
+                      setRespuestas(prev => ({ ...prev, [r._id]: e.target.value }))
+                    }
+                  />
+                  <button
+                    onClick={() => handleResponder(r._id)}
+                    className="bg-indigo-700 hover:bg-indigo-800 text-white text-sm px-4 py-2 rounded shadow"
+                  >
+                    Enviar respuesta
+                  </button>
+                </div>
+              )}
             </div>
           ))
         ) : (

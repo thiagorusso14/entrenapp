@@ -1,13 +1,15 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { SearchContext } from "../../context/search/searchContext";
 import ContratarServicio from "../usuario/ContratarServicio";
 import { FaMapMarkerAlt, FaClock, FaCalendarAlt, FaUserTie } from "react-icons/fa";
+import api from "../../axios/axios";
 
 const ListaEntrenadores = () => {
   const { services } = useContext(SearchContext);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
+  const [comentarios, setComentarios] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -15,6 +17,29 @@ const ListaEntrenadores = () => {
     setSelectedService(servicio);
     setIsDrawerOpen(true);
   };
+
+  useEffect(() => {
+    const fetchComentarios = async () => {
+      try {
+        const comentariosMap = {};
+        const uniqueTrainerIds = [...new Set(services.map(s => s.trainer?._id).filter(Boolean))];
+
+        const promises = uniqueTrainerIds.map(async (trainerId) => {
+          const res = await api.get(`/reviews/${trainerId}`);
+          comentariosMap[trainerId] = res.data.reviews || [];
+        });
+
+        await Promise.all(promises);
+        setComentarios(comentariosMap);
+      } catch (err) {
+        console.error("Error al cargar comentarios:", err);
+      }
+    };
+
+    if (services.length) {
+      fetchComentarios();
+    }
+  }, [services]);
 
   return (
     <section className="bg-gray-100 py-12 px-4 md:px-12">
@@ -28,53 +53,70 @@ const ListaEntrenadores = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {services
             .filter((servicio) => servicio.published)
-            .map((servicio) => (
-              <div
-                key={servicio._id}
-                className="bg-indigo-800 rounded-2xl p-6 shadow-md text-white flex flex-col items-start justify-between"
-              >
-                <h3 className="text-xl font-bold flex items-center gap-2 mb-1">
-                  <FaUserTie /> {servicio.trainer?.name} {servicio.trainer?.lastName}
-                </h3>
+            .map((servicio) => {
+              const trainerId = servicio.trainer?._id;
+              const resenas = comentarios[trainerId]?.slice(0, 2) || [];
 
-                <p className="text-sm opacity-80 mb-2">{servicio.category}</p>
+              return (
+                <div
+                  key={servicio._id}
+                  className="bg-indigo-800 rounded-2xl p-6 shadow-md text-white flex flex-col items-start justify-between"
+                >
+                  <h3 className="text-xl font-bold flex items-center gap-2 mb-1">
+                    <FaUserTie /> {servicio.trainer?.name} {servicio.trainer?.lastName}
+                  </h3>
 
-                <div className="w-full text-sm space-y-1 mb-4">
-                  <p><strong>Descripción:</strong> {servicio.name}</p>
-                  <p className="flex items-center gap-2">
-                    <FaMapMarkerAlt /> Zona: {servicio.zone}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <FaClock /> Duración: {servicio.duration} min
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <FaCalendarAlt /> Fecha: {new Date(servicio.date).toLocaleDateString()}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    🕒 Hora: {servicio.time}
-                  </p>
-                  <p className="text-green-300 font-bold">
-                    ${servicio.price}
-                  </p>
-                  <p><strong>Modalidad:</strong> {servicio.mode}</p>
-                </div>
+                  <p className="text-sm opacity-80 mb-2">{servicio.category}</p>
 
-                {user ? (
-                  <button
-                    onClick={() => handleOpenDrawer(servicio)}
-                    className="bg-white text-indigo-800 py-2 px-4 rounded-full hover:bg-gray-100 transition w-full text-center font-semibold"
-                  >
-                    Contratar servicio
-                  </button>
-                ) : (
-                  <Link to="/login" className="w-full">
-                    <button className="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full w-full font-semibold transition">
-                      Registrarse
+                  <div className="w-full text-sm space-y-1 mb-4">
+                    <p><strong>Descripción:</strong> {servicio.name}</p>
+                    <p className="flex items-center gap-2">
+                      <FaMapMarkerAlt /> Zona: {servicio.zone}
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <FaClock /> Duración: {servicio.duration} min
+                    </p>
+                    <p className="flex items-center gap-2">
+                      <FaCalendarAlt /> Fecha: {new Date(servicio.date).toLocaleDateString()}
+                    </p>
+                    <p className="flex items-center gap-2">🕒 Hora: {servicio.time}</p>
+                    <p className="text-green-300 font-bold">${servicio.price}</p>
+                    <p><strong>Modalidad:</strong> {servicio.mode}</p>
+                  </div>
+
+                  {/* Comentarios */}
+                  <div className="bg-white text-indigo-900 rounded-lg p-3 mb-3 w-full">
+                    <h4 className="font-semibold text-sm mb-2">Comentarios recientes:</h4>
+                    {resenas.length > 0 ? (
+                      resenas.map((r, i) => (
+                        <div key={i} className="text-sm mb-2 border-b pb-1 last:border-0 last:mb-0">
+                          <p className="text-yellow-400">{"★".repeat(r.rating)}</p>
+                          <p className="italic">{r.comment}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-gray-500 italic">Aún no tiene reseñas.</p>
+                    )}
+                  </div>
+
+                  {/* Botón de acción */}
+                  {user ? (
+                    <button
+                      onClick={() => handleOpenDrawer(servicio)}
+                      className="bg-white text-indigo-800 py-2 px-4 rounded-full hover:bg-gray-100 transition w-full text-center font-semibold"
+                    >
+                      Contratar servicio
                     </button>
-                  </Link>
-                )}
-              </div>
-            ))}
+                  ) : (
+                    <Link to="/login" className="w-full">
+                      <button className="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full w-full font-semibold transition">
+                        Registrarse
+                      </button>
+                    </Link>
+                  )}
+                </div>
+              );
+            })}
         </div>
       )}
 
