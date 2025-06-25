@@ -1,29 +1,49 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import api from "../../axios/axios";
+import { FaStar } from "react-icons/fa";
 
 const ComentarYPuntuar = () => {
-  const [entrenadores, setEntrenadores] = useState([]);
+  const [clasesConfirmadas, setClasesConfirmadas] = useState([]);
   const [resenas, setResenas] = useState({});
-  const [mensaje, setMensaje] = useState("");
+  const [mensaje, setMensaje] = useState({ text: "", type: "" });
 
   const usuario = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const fetchEntrenadores = async () => {
+    const fetchConfirmadas = async () => {
       try {
-        const { data } = await api.get("/users/trainers");
-        setEntrenadores(data);
+        const { data } = await api.get(
+          `/booking/user/${usuario._id}/confirmed-trainers`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const clases = Array.isArray(data.clases) ? data.clases : [];
+
         const inicial = {};
-        data.forEach((e) => {
-          inicial[e._id] = { rating: 0, comentario: "" };
+        clases.forEach((clase) => {
+          inicial[clase._id] = {
+            rating: 0,
+            comentario: "",
+            enviado: false,
+            success: false,
+          };
         });
+
+        setClasesConfirmadas(clases);
         setResenas(inicial);
       } catch (error) {
-        console.error("Error al cargar entrenadores", error);
+        console.error("Error al cargar clases confirmadas:", error);
+        setMensaje({
+          text: "No se pudieron cargar tus clases confirmadas.",
+          type: "error",
+        });
       }
     };
 
-    fetchEntrenadores();
+    fetchConfirmadas();
   }, []);
 
   const handlePuntuar = (id, valor) => {
@@ -40,24 +60,26 @@ const ComentarYPuntuar = () => {
     }));
   };
 
-  const handleEnviarResena = async (id) => {
-    const { rating, comentario } = resenas[id];
+  const handleEnviarResena = async (clase) => {
+    const { rating, comentario } = resenas[clase._id];
 
     if (!rating || !comentario.trim()) {
-      setMensaje("Debes ingresar una puntuación y un comentario.");
+      setMensaje({
+        text: "Debes ingresar una puntuación y un comentario.",
+        type: "error",
+      });
       return;
     }
 
     try {
-      const token = localStorage.getItem("token");
-
       await api.post(
         "/reviews",
         {
           rating,
-          comment: comentario,
+          comment: comentario.trim(),
           author: usuario._id,
-          trainer: id,
+          trainer: clase.trainer._id,
+          service: clase.service._id,
         },
         {
           headers: {
@@ -66,75 +88,127 @@ const ComentarYPuntuar = () => {
         }
       );
 
-      setMensaje("Reseña enviada correctamente");
+      setResenas((prev) => ({
+        ...prev,
+        [clase._id]: {
+          ...prev[clase._id],
+          enviado: true,
+          success: true,
+        },
+      }));
+
+      setMensaje({ text: "", type: "" });
     } catch (error) {
       console.error("Error al enviar reseña:", error);
-      setMensaje("Error al enviar la reseña.");
+      setMensaje({
+        text: "Ya enviaste una reseña para esta clase o hubo un error.",
+        type: "error",
+      });
     }
   };
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold text-indigo-900 mb-6">Comentar y puntuar</h1>
+      <h1 className="text-3xl font-bold text-indigo-900 mb-6">
+        Comentar y puntuar
+      </h1>
 
-      {mensaje && (
-        <p className="text-center mb-4 text-sm font-medium text-red-600">{mensaje}</p>
+      {mensaje.text && (
+        <p
+          className={`text-center mb-4 text-sm font-medium ${
+            mensaje.type === "error" ? "text-red-600" : "text-green-600"
+          }`}
+        >
+          {mensaje.text}
+        </p>
       )}
 
-      <div className="bg-indigo-200 p-6 rounded-xl shadow-md max-w-4xl w-full">
-        <div className="grid grid-cols-4 font-semibold text-indigo-900 mb-4">
-          <span>Coach</span>
-          <span>Puntuar</span>
-          <span>Comentar</span>
-          <span>Acción</span>
-        </div>
+      {clasesConfirmadas.length === 0 ? (
+        <p className="text-center text-gray-600">
+          No tenés clases confirmadas para comentar aún.
+        </p>
+      ) : (
+        <div className="space-y-6">
+          {clasesConfirmadas.map((clase) => {
+            const resena = resenas[clase._id] || {};
+            const entrenador = clase.trainer;
+            const servicio = clase.service;
 
-        {entrenadores.map((entrenador) => {
-          const resena = resenas[entrenador._id] || { rating: 0, comentario: "" };
-
-          return (
-            <div
-              key={entrenador._id}
-              className="grid grid-cols-4 items-center mb-4 gap-2"
-            >
-              <span className="text-indigo-900 font-medium">
-                {entrenador.name} {entrenador.lastName}
-              </span>
-
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((estrella) => (
-                  <span
-                    key={estrella}
-                    className={`text-xl cursor-pointer ${
-                      estrella <= resena.rating ? "text-yellow-400" : "text-gray-400"
-                    }`}
-                    onClick={() => handlePuntuar(entrenador._id, estrella)}
-                  >
-                    ★
-                  </span>
-                ))}
-              </div>
-
-              <input
-                type="text"
-                placeholder="Escribí tu comentario"
-                className="p-2 rounded border border-gray-300 w-full"
-                value={resena.comentario}
-                onChange={(e) =>
-                  handleComentario(entrenador._id, e.target.value)
-                }
-              />
-
-              <button
-                onClick={() => handleEnviarResena(entrenador._id)}
-                className="bg-indigo-800 text-white text-sm py-1 px-3 rounded hover:bg-indigo-700"
+            return (
+              <div
+                key={clase._id}
+                className={`p-6 rounded-xl shadow-md border transition-all ${
+                  resena.success
+                    ? "bg-green-100 border-green-400"
+                    : "bg-white border-indigo-200"
+                }`}
               >
-                Enviar
-              </button>
-            </div>
-          );
-        })}
-      </div>
+                <h2 className="text-lg font-bold text-indigo-800 mb-1">
+                  {entrenador.name} {entrenador.lastName}
+                </h2>
+                <p className="text-sm text-gray-700">
+                  Clase: <strong>{servicio.name}</strong> | Categoría:{" "}
+                  <strong>{servicio.category}</strong>
+                </p>
+                <p className="text-sm text-gray-700">
+                  Fecha: {new Date(servicio.date).toLocaleDateString()} - Hora:{" "}
+                  {servicio.time}
+                </p>
+                <p className="text-sm text-gray-700">
+                  Modalidad: {servicio.mode} - Precio: ${servicio.price}
+                </p>
+
+                <div className="flex gap-3 items-center mt-3">
+                  <label className="text-sm font-semibold text-indigo-700">
+                    Puntuar:
+                  </label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((estrella) => (
+                      <FaStar
+                        key={estrella}
+                        className={`cursor-pointer text-lg ${
+                          estrella <= resena.rating
+                            ? "text-yellow-400"
+                            : "text-gray-300"
+                        }`}
+                        onClick={() =>
+                          !resena.enviado &&
+                          handlePuntuar(clase._id, estrella)
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    className="border rounded p-2 w-full"
+                    placeholder="Escribí tu comentario"
+                    disabled={resena.enviado}
+                    value={resena.comentario}
+                    onChange={(e) =>
+                      handleComentario(clase._id, e.target.value)
+                    }
+                  />
+                </div>
+
+                <button
+                  onClick={() => handleEnviarResena(clase)}
+                  disabled={resena.enviado}
+                  className={`mt-3 px-4 py-2 text-sm rounded font-semibold ${
+                    resena.enviado
+                      ? "bg-green-400 text-white cursor-not-allowed"
+                      : "bg-indigo-700 hover:bg-indigo-800 text-white"
+                  }`}
+                >
+                  {resena.enviado ? "Reseña enviada" : "Enviar reseña"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

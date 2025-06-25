@@ -3,6 +3,8 @@ import api from "../../axios/axios";
 
 const MisDatos = () => {
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+
   const [editando, setEditando] = useState(false);
   const [usuario, setUsuario] = useState({
     name: "",
@@ -11,24 +13,36 @@ const MisDatos = () => {
     birth: "",
   });
 
-  // Obtener datos reales al montar
   useEffect(() => {
     const fetchUsuario = async () => {
+      if (!user?._id || !token) {
+        console.warn("⚠️ Falta el user ID o token");
+        return;
+      }
+
       try {
-        const { data } = await api.get(`/users/${user._id}`);
+        const { data } = await api.get(`/users/${user._id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        console.log("🔎 Datos recibidos del backend:", data);
+        const u = data.user || data;
+
         setUsuario({
-          name: data.name,
-          lastName: data.lastName,
-          mail: data.mail,
-          birth: data.birth?.split("T")[0] || "", // formato yyyy-mm-dd
+          name: u.name,
+          lastName: u.lastName,
+          mail: u.mail,
+          birth: u.birth?.split("T")[0] || "",
         });
       } catch (error) {
-        console.error("Error al cargar datos del usuario:", error);
+        console.error("❌ Error al cargar datos del usuario:", error.response?.data || error.message || error);
       }
     };
 
     fetchUsuario();
-  }, [user._id]);
+  }, [user?._id, token]);
 
   const handleChange = (e) => {
     setUsuario({
@@ -40,11 +54,18 @@ const MisDatos = () => {
   const handleGuardar = async (e) => {
     e.preventDefault();
     try {
-      await api.patch(`/users/${user._id}`, usuario);
+      const { data } = await api.patch(`/users/${user._id}`, usuario, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      localStorage.setItem("user", JSON.stringify(data.user));
       alert("Datos actualizados correctamente");
       setEditando(false);
+      window.location.reload(); // para refrescar nombre en sidebar
     } catch (error) {
-      console.error("Error al guardar los cambios:", error);
+      console.error("❌ Error al guardar los cambios:", error.response?.data || error.message || error);
       alert("No se pudieron guardar los cambios");
     }
   };

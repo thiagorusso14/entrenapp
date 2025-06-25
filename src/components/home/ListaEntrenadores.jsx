@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
+import { Link } from "react-router-dom";
+import { SearchContext } from "../../context/search/searchContext";
 import ContratarServicio from "../usuario/ContratarServicio";
-import api from "../../axios/axios";
+import { FaMapMarkerAlt, FaClock, FaCalendarAlt, FaUserTie } from "react-icons/fa";
 
 const ListaEntrenadores = () => {
-  const [services, setServices] = useState([]);
+  const { services } = useContext(SearchContext);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [selectedService, setSelectedService] = useState(null);
-  const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -16,69 +16,65 @@ const ListaEntrenadores = () => {
     setIsDrawerOpen(true);
   };
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        const { data } = await api.get("/services/active");
-        setServices(data);
-      } catch (error) {
-        console.error("Error al obtener servicios activos:", error);
-      }
-    };
-
-    fetchServices();
-  }, []);
-
   return (
-    <section className="bg-white py-12 px-4 md:px-12">
-      <h2 className="text-3xl font-bold text-center mb-10 text-gray-800">Entrenadores disponibles</h2>
+    <section className="bg-gray-100 py-12 px-4 md:px-12">
+      <h2 className="text-4xl font-bold text-center mb-10 text-indigo-900">
+        Entrenadores disponibles
+      </h2>
 
       {services.length === 0 ? (
         <p className="text-center text-gray-500">No hay servicios para mostrar.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {services.map((servicio) => (
-            <div
-              key={servicio._id}
-              className="bg-indigo-800 rounded-2xl p-6 shadow-lg text-white flex flex-col items-center"
-            >
-              <img
-                src={servicio.trainer?.photo || "/default-profile.jpg"}
-                alt={servicio.trainer?.name || "Entrenador"}
-                className="w-28 h-28 object-cover rounded-full mb-4 border-4 border-white shadow-md"
-              />
-              <h3 className="text-lg font-bold underline">
-                {servicio.trainer?.name || "Entrenador"}
-              </h3>
-              <p className="mt-1">{servicio.category}</p>
-              <p className="text-yellow-300 font-semibold mt-1">
-                ${servicio.price} / hr
-              </p>
+          {services
+            .filter((servicio) => servicio.published)
+            .map((servicio) => (
+              <div
+                key={servicio._id}
+                className="bg-indigo-800 rounded-2xl p-6 shadow-md text-white flex flex-col items-start justify-between"
+              >
+                <h3 className="text-xl font-bold flex items-center gap-2 mb-1">
+                  <FaUserTie /> {servicio.trainer?.name} {servicio.trainer?.lastName}
+                </h3>
 
-              <div className="text-sm text-left mt-4 w-full">
-                <p className="font-semibold">Zona: {servicio.zone}</p>
-                <p className="font-semibold">Modalidad: {servicio.mode}</p>
-                <p className="font-semibold">Duración: {servicio.duration} min</p>
-                <p className="font-semibold">Fecha: {new Date(servicio.date).toLocaleDateString()}</p>
-                <p className="font-semibold">Hora: {servicio.time}</p>
-              </div>
+                <p className="text-sm opacity-80 mb-2">{servicio.category}</p>
 
-              {user ? (
-                <button
-                  onClick={() => handleOpenDrawer(servicio)}
-                  className="mt-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full transition duration-300 font-semibold"
-                >
-                  Contratar servicio
-                </button>
-              ) : (
-                <Link to="/login">
-                  <button className="mt-6 bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full transition duration-300 font-semibold">
-                    Registrarse
+                <div className="w-full text-sm space-y-1 mb-4">
+                  <p><strong>Descripción:</strong> {servicio.name}</p>
+                  <p className="flex items-center gap-2">
+                    <FaMapMarkerAlt /> Zona: {servicio.zone}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <FaClock /> Duración: {servicio.duration} min
+                  </p>
+                  <p className="flex items-center gap-2">
+                    <FaCalendarAlt /> Fecha: {new Date(servicio.date).toLocaleDateString()}
+                  </p>
+                  <p className="flex items-center gap-2">
+                    🕒 Hora: {servicio.time}
+                  </p>
+                  <p className="text-green-300 font-bold">
+                    ${servicio.price}
+                  </p>
+                  <p><strong>Modalidad:</strong> {servicio.mode}</p>
+                </div>
+
+                {user ? (
+                  <button
+                    onClick={() => handleOpenDrawer(servicio)}
+                    className="bg-white text-indigo-800 py-2 px-4 rounded-full hover:bg-gray-100 transition w-full text-center font-semibold"
+                  >
+                    Contratar servicio
                   </button>
-                </Link>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <Link to="/login" className="w-full">
+                    <button className="bg-yellow-400 hover:bg-yellow-300 text-indigo-900 px-4 py-2 rounded-full w-full font-semibold transition">
+                      Registrarse
+                    </button>
+                  </Link>
+                )}
+              </div>
+            ))}
         </div>
       )}
 

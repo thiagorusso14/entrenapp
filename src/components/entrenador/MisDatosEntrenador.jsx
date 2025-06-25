@@ -15,7 +15,10 @@ const MisDatosEntrenador = () => {
 
   useEffect(() => {
     const fetchEntrenador = async () => {
-      if (!user?._id || !token) return;
+      if (!user?._id || !token) {
+        console.warn("⚠️ Falta user._id o token");
+        return;
+      }
 
       try {
         const { data } = await api.get(`/users/${user._id}`, {
@@ -24,8 +27,9 @@ const MisDatosEntrenador = () => {
           },
         });
 
-        // Si tu backend devuelve { user: {...} }, entonces:
-        const userData = data.user || data; // admite ambas respuestas
+        console.log("🔎 Datos entrenador recibidos:", data);
+
+        const userData = data.user || data;
 
         setEntrenador({
           name: userData.name,
@@ -34,7 +38,7 @@ const MisDatosEntrenador = () => {
           birth: userData.birth?.split("T")[0] || "",
         });
       } catch (error) {
-        console.error("Error al cargar datos del entrenador:", error.response?.data || error.message);
+        console.error("❌ Error al cargar datos del entrenador:", error.response?.data || error.message);
       }
     };
 
@@ -52,16 +56,18 @@ const MisDatosEntrenador = () => {
     e.preventDefault();
 
     try {
-      await api.patch(`/users/${user._id}`, entrenador, {
+      const { data } = await api.patch(`/users/${user._id}`, entrenador, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
+      localStorage.setItem("user", JSON.stringify(data.user)); // ✅ actualiza sidebar
       alert("Datos actualizados correctamente");
       setEditando(false);
+      window.location.reload(); // 🔄 refresca la sidebar
     } catch (error) {
-      console.error("Error al guardar los cambios:", error.response?.data || error.message);
+      console.error("❌ Error al guardar los cambios:", error.response?.data || error.message);
       alert("No se pudieron guardar los cambios");
     }
   };

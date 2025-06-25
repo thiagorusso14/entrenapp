@@ -32,7 +32,7 @@ const Login = ({ tipo }) => {
       localStorage.setItem("user", JSON.stringify(data.user));
 
       if (data.user.role === 'USER_ROLE') {
-        navigate('/usuario');
+        navigate('/');
       } else if (data.user.role === 'TRAINER_ROLE') {
         navigate('/entrenador');
       }

@@ -1,14 +1,10 @@
 import { useState, useEffect, useContext } from "react";
 import { FaSearch } from "react-icons/fa";
 import { SearchContext } from "../../context/search/searchContext";
+import { useNavigate } from "react-router-dom";
 
 function Hero() {
   const { searchServices, services } = useContext(SearchContext);
-
-  useEffect(() => {
-    console.log(services);
-  }, [services]);
-
   const [filters, setFilters] = useState({
     zone: "",
     mode: "",
@@ -18,14 +14,26 @@ function Hero() {
     category: "",
   });
 
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    console.log(services);
+  }, [services]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSearch = async () => {
-  await searchServices(filters);
-};
+    if (!user || user.role !== "USER_ROLE") {
+      navigate("/login");
+      return;
+    }
+
+    await searchServices(filters);
+  };
 
   return (
     <div
@@ -39,10 +47,12 @@ function Hero() {
       </div>
 
       <div className="flex-1 flex flex-col items-center gap-4">
-        <div className="flex bg-white/90 backdrop-blur-lg shadow-lg rounded-full w-[1120px] px-4 py-3">
+        <div className="flex bg-white/90 backdrop-blur-lg shadow-lg rounded-full w-[1020px] px-3 py-3">
           {[
             {
-              name: "zone", label: "Zona", options: ["PALERMO", "BELGRANO", "CABALLITO", "ALMAGRO", "PARQUE_PATRICIOS", "BOEDO", "AVELLANEDA", "ONLINE"]
+              name: "zone",
+              label: "Zona",
+              options: ["PALERMO", "BELGRANO", "CABALLITO", "ALMAGRO", "PARQUE_PATRICIOS", "BOEDO", "AVELLANEDA", "ONLINE"]
             },
             { name: "mode", label: "Modalidad", options: ["PRESENCIAL", "ONLINE"] },
             { name: "price", label: "Precio", type: "number" },
@@ -79,7 +89,6 @@ function Hero() {
               )}
             </div>
           ))}
-          {/* Botón buscar */}
           <button
             onClick={handleSearch}
             className="bg-rose-500 hover:bg-rose-600 text-white rounded-full px-6 ml-4 flex items-center justify-center"

@@ -7,6 +7,7 @@ function Navbar() {
   const handleLogout = () => {
     localStorage.clear();
     navigate("/"); // Redirige al home
+    window.location.reload(); // ✅ Fuerza recarga completa
   };
 
   return (

@@ -1,39 +1,60 @@
-import { useParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import api from "../../axios/axios";
-import { useEffect, useState } from "react";
 import WalletBrick from "../MercadoPago/WalletBrick";
 
 const ContratarServicio = ({ onClose, servicio }) => {
-  const { id } = useParams(); // en este componente no es necesario
   const [preferenceId, setPreferenceId] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+  const executedRef = useRef(false); // 👈 evita doble ejecución
 
   useEffect(() => {
-    const contratarServicio = async () => {
+    const contratar = async () => {
       try {
-        // 1. Crear la reserva (booking)
-        await api.post(`/bookings/${user._id}`, {
-          serviceId: servicio._id,
-        });
+        // 1. Crear preferencia de pago
+        const { data } = await api.post(
+          "/services/create-preference",
+          {
+            title: `${servicio.name} - ${servicio.trainer.name}`,
+            unit_price: servicio.price,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-        // 2. Generar preferencia de pago
-        const { data } = await api.post('/services/create-preference', {
-          title: `${servicio.name} - ${servicio.trainer.name}`,
-          unit_price: servicio.price,
-        });
+        setPreferenceId(data.preference_id);
 
-        setPreferenceId(data.preferenceId);
+        // 2. Crear la reserva luego de la preferencia
+        await api.post(
+          `/booking/${user._id}`,
+          {
+            serviceId: servicio._id,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
       } catch (err) {
         console.error("Error al contratar servicio:", err);
-        setError("No se pudo contratar el servicio.");
+        setError("Ocurrió un error al procesar tu contratación.");
       } finally {
         setLoading(false);
       }
     };
 
-    contratarServicio();
+    // Ejecutar solo una vez
+    if (!executedRef.current) {
+      executedRef.current = true;
+      contratar();
+    }
   }, []);
 
   if (loading) return <div className="text-center text-white">Cargando...</div>;
@@ -53,13 +74,12 @@ const ContratarServicio = ({ onClose, servicio }) => {
         <p><strong>Entrenador:</strong> {servicio.trainer.name}</p>
         <p><strong>Clase:</strong> {servicio.name}</p>
         <p><strong>Categoría:</strong> {servicio.category}</p>
-        <p><strong>Duración:</strong> {servicio.duration}min</p>
+        <p><strong>Duración:</strong> {servicio.duration} min</p>
         <p><strong>Precio:</strong> ${servicio.price}</p>
         <p><strong>Modalidad:</strong> {servicio.mode}</p>
         <p><strong>Fecha:</strong> {new Date(servicio.date).toLocaleDateString()}</p>
         <p><strong>Hora:</strong> {servicio.time}</p>
 
-        {/* Si hay preferenceId, mostrar botón de pago */}
         {preferenceId && <WalletBrick servicio={servicio} />}
       </div>
     </div>

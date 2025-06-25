@@ -1,5 +1,12 @@
 export const initialState = {
-  filters: {},
+  filters: {
+    zone: "",
+    mode: "",
+    price: "",
+    duration: "",
+    calification: "",
+    category: "",
+  },
   services: [],
 };
 
