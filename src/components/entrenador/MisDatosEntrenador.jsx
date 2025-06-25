@@ -3,6 +3,8 @@ import api from "../../axios/axios";
 
 const MisDatosEntrenador = () => {
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+
   const [editando, setEditando] = useState(false);
   const [entrenador, setEntrenador] = useState({
     name: "",
@@ -11,24 +13,33 @@ const MisDatosEntrenador = () => {
     birth: "",
   });
 
-  // Obtener datos reales al montar
   useEffect(() => {
     const fetchEntrenador = async () => {
+      if (!user?._id || !token) return;
+
       try {
-        const { data } = await api.get(`/users/${user._id}`);
+        const { data } = await api.get(`/users/${user._id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Si tu backend devuelve { user: {...} }, entonces:
+        const userData = data.user || data; // admite ambas respuestas
+
         setEntrenador({
-          name: data.name,
-          lastName: data.lastName,
-          mail: data.mail,
-          birth: data.birth?.split("T")[0] || "",
+          name: userData.name,
+          lastName: userData.lastName,
+          mail: userData.mail,
+          birth: userData.birth?.split("T")[0] || "",
         });
       } catch (error) {
-        console.error("Error al cargar datos del entrenador:", error);
+        console.error("Error al cargar datos del entrenador:", error.response?.data || error.message);
       }
     };
 
     fetchEntrenador();
-  }, [user._id]);
+  }, [user?._id, token]);
 
   const handleChange = (e) => {
     setEntrenador({
@@ -39,12 +50,18 @@ const MisDatosEntrenador = () => {
 
   const handleGuardar = async (e) => {
     e.preventDefault();
+
     try {
-      await api.patch(`/users/${user._id}`, entrenador);
+      await api.patch(`/users/${user._id}`, entrenador, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
       alert("Datos actualizados correctamente");
       setEditando(false);
     } catch (error) {
-      console.error("Error al guardar los cambios:", error);
+      console.error("Error al guardar los cambios:", error.response?.data || error.message);
       alert("No se pudieron guardar los cambios");
     }
   };

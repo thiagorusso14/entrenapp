@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import {
   FaUserCircle,
   FaClipboardList,
@@ -6,16 +7,31 @@ import {
   FaEdit,
   FaIdBadge
 } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/auth/authContext";
 
 function SidebarEntrenador() {
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    logout();
+    navigate("/");
+  };
+
   return (
     <aside className="bg-[#1b1464] text-white w-28 md:w-64 h-screen p-4 flex flex-col justify-between">
       <div>
         {/* Perfil */}
         <div className="flex flex-col items-center mb-10">
           <FaUserCircle className="text-4xl mb-2" />
-          <p className="text-center text-sm font-semibold">Nombre entrenador</p>
+          <p className="text-center text-sm font-semibold">
+            {user?.name || ""} {user?.lastName || ""}
+          </p>
         </div>
 
         {/* Links */}
@@ -56,7 +72,10 @@ function SidebarEntrenador() {
       </div>
 
       {/* Logout */}
-      <button className="flex items-center gap-2 text-sm text-white hover:text-gray-300">
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-2 text-sm text-white hover:text-gray-300"
+      >
         <FaSignOutAlt /> Logout
       </button>
     </aside>
